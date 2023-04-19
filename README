@@ -1,0 +1,37 @@
+Orzata Gabriel-Nicusor 333CB
+Memory Allocator
+
+Malloc:
+In implementarea functiei malloc am ales sa includ functionalitatea de
+coalescing, adica in functia find_best_block verific si daca exista
+mai multe block-uri libere care pot fi combinate in unul destul de mare
+incat sa pot aloca in ele memoria necesara. De asemenea, daca exista mai
+multe block-uri libere consecutive la finalul listei de block-uri, tratez
+posibilitatea in care pot sa extind zona de memorie, dupa ce fac merge acestor
+block-uri.
+Tot in functia find_best_block este ales block-ul cu marimea cea mai apropiata
+de dimensiunea malloc-ului.
+In cazul in care gasesc un block liber verific daca il pot impartii in doua
+block-uri, adica daca dimensiunea lui este mai mare ca dimensiunea malloc-ului
+cu cel putin sizeof(struct block_meta) + 8 bytes.
+Daca nu gasesc un block, ori extind ultimul block, daca este liber, ori creez unul
+nou si maresc punctul de break al zonei de memorie.
+Zonelor de memorie alocate cu mmap le dau statusul MAPPED, iar cand trebuie sa le dau
+free folosesc syscall-ul munmap.
+
+Free:
+Pentru memoria alocata cu sbrk nu apelez niciun apel de sistem si doar declar block-ul
+respectiv de memorie ca fiind liber, iar pentru memoria alocata cu mmap apelez munmap.
+
+Calloc:
+Implementarea este la fel ca la malloc, iar in plus setez memoria alocata la 0, folosind
+memset.
+
+Realloc:
+Pentru realloc am facut o noua functie find_best_block_realloc care sa respecte
+functionalitatile necesare. Folosesc memcpy pentru a copia memoria veche in zona
+de memorie noua, doar atunci cand block-ul este mutat cu totul si nu doar extins.
+Prima data verific daca block-ul unde a fost alocata memoria initial poate fi extins,
+adica daca are "in fata" unul sau mai multe block-uri de memorie libere, iar apoi
+verific daca pot repozitiona block-ul in alta zona a memoriei deja alocate.
+Daca nu exista niciun block liber sau indeajuns de mare creez un block nou.
